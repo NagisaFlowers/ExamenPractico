@@ -62,7 +62,7 @@ jobs:
     if: failure() && github.ref == 'refs/heads/main'
     
     steps:
-    - name: Ejecutar rollback simulado
+    - name: rollback simulado
       run: |
         echo "ROLLBACK INICIADO"
         echo "Error detectado en el pipeline"

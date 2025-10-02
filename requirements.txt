@@ -1,0 +1,6 @@
+Flask==2.3.3
+Werkzeug==2.3.7
+
+#Automatizacion de infraestructura digital II
+#Prof. FROYLAN ALONSO PEREZ ALANIS
+# GRAU MORENO MANUEL  - 220550

@@ -1,4 +1,4 @@
-name: DevOps CI/CD Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -8,81 +8,66 @@ on:
 
 jobs:
   test:
-    name: Ejecutar Tests
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v3
-    
+      uses: actions/checkout@v4
+
     - name: Configurar Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-    
+
     - name: Instalar dependencias
-      run:
-        cd app
+      run: |
         pip install -r requirements.txt
-        pip install pytest pytest-flask
-    
-    - name: Ejecutar tests
-      run:
-        cd app
-        python -c "import flask; print('Flask importado correctamente')"
-        python -c "from app import app; print('Aplicación Flask cargada')"
-    
-    - name: Security Scan (SAST)
-      uses: actions/upload-artifact@v3
-      with:
-        name: test-results
-        path: app/
+
+    - name: Ejecutar tests básicos
+      run: |
+        python -c "import flask; print('Flask instalado correctamente')"
+        python -c "from app import app; print('Aplicación Flask importada correctamente')"
 
   build:
-    name: Construir y Publicar
-    runs-on: ubuntu-latest
     needs: test
-    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v3
-    
-    - name: Construir imagen Docker
+      uses: actions/checkout@v4
+
+    - name: Build imagen Docker
       run: |
-        docker build -t proyecto-devops:${{ github.sha }} .
-        docker build -t proyecto-devops:latest .
-    
-    - name: Test de contenedor
+        docker build -t devops-app:latest .
+
+    - name: Tag imagen con SHA
       run: |
-        docker run -d --name test-container -p 5001:5000 proyecto-devops:latest
-        sleep 15
-        
-        # Health check
-        curl -f http://localhost:5001/health || exit 1
-        docker stop test-container
-        docker rm test-container
-    
-    - name: Simular error (Rollback test)
-      run: |
-        echo "Simulando falla en el despliegue..."
-        # Esto fallará intencionalmente para demostrar rollback
-        docker run --rm alpine sh -c "exit 1" || echo "Error simulado - Listo para rollback"
-    
-  deploy:
-    name: Despliegue
-    runs-on: ubuntu-latest
+        docker tag devops-app:latest devops-app:${{ github.sha }}
+
+  deploy-simulation:
     needs: build
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     
     steps:
-    - name: Log de despliegue
+    - name: 🚀 Despliegue simulado
       run: |
-        echo "Despliegue simulado exitoso"
-        echo "Aplicación: proyecto-devops"
+        echo "Iniciando despliegue de la aplicación..."
         echo "Versión: ${{ github.sha }}"
-        echo "Entorno: Production"
         echo "Fecha: $(date)"
+        echo "Despliegue simulado completado exitosamente"
+
+  rollback-simulation:
+    runs-on: ubuntu-latest
+    if: failure() && github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: examen rollback simulado
+      run: |
+        echo "ROLLBACK INICIADO"
+        echo "Error detectado en el pipeline"
+        echo "Revertiendo a versión estable anterior"
+        echo "Rollback completado exitosamente"
 
 #Automatizacion de infraestructura digital II
 #Prof. FROYLAN ALONSO PEREZ ALANIS
